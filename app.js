@@ -48,22 +48,29 @@ app.use(function(err, req, res, next) {
 
 
 
-app.listen(8000, () => {
-    console.log("Server is listening on port 3000");
+app.listen(3001, () => {
+    console.log("Server is listening on port 3001");
 });
 
 
-mongoose.Promise = global.Promise;
-
-// Connecting to the database
-mongoose.connect(dbConfig.url, {
-    useNewUrlParser: true
-}).then(() => {
-    console.log("Successfully connected to the database");    
-}).catch(err => {
-    console.log('Could not connect to the database. Exiting now...', err);
-    process.exit();
-});
+// Connect to database only if MongoDB URL is provided
+if (process.env.MONGODB_URL || process.env.NODE_ENV !== 'development') {
+  mongoose.Promise = global.Promise;
+  
+  // Connecting to the database
+  const mongoUrl = process.env.MONGODB_URL || dbConfig.url;
+  mongoose.connect(mongoUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+  }).then(() => {
+      console.log("Successfully connected to the database");    
+  }).catch(err => {
+      console.log('Could not connect to the database:', err.message);
+      console.log('Running in demo mode without database...');
+  });
+} else {
+  console.log('Running in demo mode without database connection...');
+}
 
 
 module.exports = app;
